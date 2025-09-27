@@ -1,0 +1,110 @@
+import math
+
+def newton_raphson(func, deriv, x0, tol, max_iter):
+    """
+    Implementa el método de Newton-Raphson para encontrar raíces de funciones.
+    
+    Parámetros:
+    func (función): Función original f(x)
+    deriv (función): Primera derivada f'(x)
+    x0 (float): Valor inicial de la iteración
+    tol (float): Tolerancia aceptable para el error
+    max_iter (int): Número máximo de iteraciones permitidas
+    
+    Retorna:
+    float: Raíz aproximada de la función
+    int: Número de iteraciones realizadas
+    """
+    
+    def segunda_derivada(x):
+        """Calcula la segunda derivada usando diferenciación numérica"""
+        h = 1e-5  # Pequeño incremento para cálculo numérico
+        return (deriv(x + h) - deriv(x)) / h
+
+    # Verificar criterio de convergencia
+    f_x0 = func(x0)
+    f_prime_x0 = deriv(x0)
+    f_double_prime_x0 = segunda_derivada(x0)
+    
+    criterio = abs((f_x0 * f_double_prime_x0) / (f_prime_x0 ** 2))
+    
+    if criterio >= 1:
+        print(f"Advertencia: El criterio de convergencia no se cumple (valor = {criterio:.6f})")
+        print("El método puede no converger con el valor inicial proporcionado.")
+    
+    # Iteraciones del método
+    for i in range(max_iter):
+        # Evaluar función y derivada en el punto actual
+        f_x = func(x0)
+        f_prime_x = deriv(x0)
+        
+        # Evitar división por cero
+        if abs(f_prime_x) < 1e-12:
+            print("Error: La derivada es muy cercana a cero.")
+            return None, i+1
+        
+        # Calcular nueva aproximación
+        xn = x0 - f_x / f_prime_x
+        
+        # Calcular error relativo porcentual
+        er = abs((xn - x0) / xn) * 100 if xn != 0 else float('inf')
+        
+        # Verificar tolerancia
+        if er < tol:
+            return xn, i+1
+        
+        # Actualizar valor para siguiente iteración
+        x0 = xn
+    
+    print("Máximo número de iteraciones alcanzado.")
+    return x0, max_iter
+
+def main():
+    """
+    Función principal que maneja la interacción con el usuario
+    y ejecuta el método de Newton-Raphson.
+    """
+    # Definir la función original y su derivada
+    def func(x):
+        return math.exp(x) - 2
+    
+    def derivada(x):
+        return math.exp(x)
+    
+    # Solicitar parámetros al usuario
+    print("Método de Newton-Raphson para f(x) = e^x - 2")
+    print("=" * 50)
+    
+    try:
+        x0 = float(input("Ingresa el valor inicial x0: "))
+        max_iter = int(input("Ingresa el número máximo de iteraciones: "))
+        tol = float(input("Ingresa la tolerancia (ej. 0.01 para 1%): "))
+        
+        # Validar entradas
+        if max_iter <= 0:
+            print("Error: El número de iteraciones debe ser positivo.")
+            return
+        
+        if tol <= 0:
+            print("Error: La tolerancia debe ser positiva.")
+            return
+        
+        # Ejecutar método
+        raiz, iteraciones = newton_raphson(func, derivada, x0, tol, max_iter)
+        
+        # Mostrar resultados
+        if raiz is not None:
+            print("\n" + "=" * 50)
+            print("RESULTADOS:")
+            print(f"Raíz aproximada: {raiz:.10f}")
+            print(f"Iteraciones realizadas: {iteraciones}")
+            print(f"Valor de la función en la raíz: {func(raiz):.2e}")
+        
+    except ValueError:
+        print("Error: Por favor ingresa valores numéricos válidos.")
+    except Exception as e:
+        print(f"Error inesperado: {e}")
+
+# Ejecutar el programa
+if __name__ == "__main__":
+    main()
